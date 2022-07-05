@@ -1794,8 +1794,7 @@ CarSpeed=1,CarPitch=1,AlertShutdown=false,AntiAFK=false},'v1.0.59b-PreDVT',
 true;
 
 -->GUI Main Function Variables
-local DupeMoneyQuantity,AutobuyAmount,
-AutobuySelectedItem=1,1,'BasicHatchet';
+local DupeMoneyQuantity,AutobuyAmount,AutobuySelectedItem=1,1,'BasicHatchet';
 
 -->Optimisation Shit 
 local RepStore,RunService,UIS,Players,Lighting,ScriptContext,PerformanceStats,TeleportService,HttpService,MarketplaceService,VirtualUser=game:GetService'ReplicatedStorage',game:GetService'RunService',game:GetService'UserInputService',game:GetService'Players',game:GetService'Lighting',game:GetService'ScriptContext',game:GetService'Stats'.PerformanceStats,game:GetService'TeleportService',game:GetService'HttpService',game:GetService'MarketplaceService',game:GetService'VirtualUser';
@@ -1814,7 +1813,7 @@ local ChatUI=LP.PlayerGui.ChatGUI.Chat;
 local whitelistedPlots={'68, 0, -189, 1, 0, 0, 0, 1, 0, 0, 0, 1','275, 0, -512, 1, 0, 0, 0, 1, 0, 0, 0, 1','383, 0, -250, 1, 0, 0, 0, 1, 0, 0, 0, 1'};
 
 -->Remotes
-local Client_May_Load,Donate,Request_Load,Request_Save,GetMetaData,ClientPurchasedProperty,ClientExpandedProperty,ClientRequestOwnership,ClientIsDragging,TestPing,PlayerChatted,SendUserNotice,ClientSetListPlayer,DestroyStructure,ClientInteracted,ClientPlacedBlueprint,ClientPlacedStructure,RemoteProxy,WipeMetaData,SayMessageRequest,ClientIsWhitelisted=RepStore.LoadSaveRequests.ClientMayLoad,RepStore.Transactions.ClientToServer.Donate,RepStore.LoadSaveRequests.RequestLoad,RepStore.LoadSaveRequests.RequestSave,RepStore.LoadSaveRequests.GetMetaData,RepStore.PropertyPurchasing.ClientPurchasedProperty,RepStore.PropertyPurchasing.ClientExpandedProperty,RepStore.Interaction.ClientRequestOwnership,RepStore.Interaction.ClientIsDragging,RepStore.TestPing,RepStore.NPCDialog.PlayerChatted,RepStore.Notices.SendUserNotice,RepStore.Interaction.ClientSetListPlayer,RepStore.Interaction.DestroyStructure,RepStore.Interaction.ClientInteracted,RepStore.PlaceStructure.ClientPlacedBlueprint,RepStore.PlaceStructure.ClientPlacedStructure,RepStore.Interaction.RemoteProxy,RepStore.LoadSaveRequests.WipeMetaData,RepStore.DefaultChatSystemChatEvents.SayMessageRequest,RepStore.Interaction.ClientIsWhitelisted;
+local Client_May_Load,Donate,Request_Load,Request_Save,GetMetaData,ClientPurchasedProperty,ClientExpandedProperty,ClientIsDragging,TestPing,PlayerChatted,SendUserNotice,ClientSetListPlayer,DestroyStructure,ClientInteracted,ClientPlacedBlueprint,ClientPlacedStructure,RemoteProxy,WipeMetaData,SayMessageRequest,ClientIsWhitelisted=RepStore.LoadSaveRequests.ClientMayLoad,RepStore.Transactions.ClientToServer.Donate,RepStore.LoadSaveRequests.RequestLoad,RepStore.LoadSaveRequests.RequestSave,RepStore.LoadSaveRequests.GetMetaData,RepStore.PropertyPurchasing.ClientPurchasedProperty,RepStore.PropertyPurchasing.ClientExpandedProperty,RepStore.Interaction.ClientIsDragging,RepStore.TestPing,RepStore.NPCDialog.PlayerChatted,RepStore.Notices.SendUserNotice,RepStore.Interaction.ClientSetListPlayer,RepStore.Interaction.DestroyStructure,RepStore.Interaction.ClientInteracted,RepStore.PlaceStructure.ClientPlacedBlueprint,RepStore.PlaceStructure.ClientPlacedStructure,RepStore.Interaction.RemoteProxy,RepStore.LoadSaveRequests.WipeMetaData,RepStore.DefaultChatSystemChatEvents.SayMessageRequest,RepStore.Interaction.ClientIsWhitelisted;
 local Plots,StoreChildren=wrkspc.Properties:GetChildren(),wrkspc.Stores:GetChildren();
 local AxeFolder=RepStore.AxeClasses
 
@@ -2464,9 +2463,8 @@ function Ancestor:BringTree()
         Connections[#Connections+1]={Name='BringTree',Function=workspace.LogModels.ChildAdded:Connect(function(Tree)
             local Owner=Tree:WaitForChild'Owner';
             if Owner.Value==LP then 
-                Tree.PrimaryPart=Tree:FindFirstChild'WoodSection';
                 for i=1,10 do 
-                    ClientRequestOwnership:FireServer(Tree);
+                    Tree.PrimaryPart=Tree:FindFirstChild'WoodSection';
                     ClientIsDragging:FireServer(Tree);
                     Tree:SetPrimaryPartCFrame(OldPos);
                     Stepped:wait();
@@ -2927,7 +2925,7 @@ end;
 function Ancestor:ResetCarSpeed()
     if not Character.Humanoid.SeatPart then return end;
     local CurrentVehicle=Character.Humanoid.SeatPart.Parent.ItemName.Value;
-    local VehicleFolder=RepStore.Purchasables.Vehicles:GetDescendants();
+    local VehicleFolder=RepStore.ClientItemInfo:GetDescendants();
     for i=1,#VehicleFolder do 
         local Vehicle=VehicleFolder[i];
         if tstring(Vehicle)==tstring(CurrentVehicle)then 
@@ -3665,6 +3663,18 @@ local HitPoint=AxeModule.Damage;
     return HitPoint;
 end;
 
+function Ancestor:GetRandomCar()
+    local PlayerModels=workspace.PlayerModels:GetChildren();
+    for i=1,#PlayerModels do 
+        local Model=PlayerModels[i];
+        if Model:FindFirstChild'Owner'and Model.Owner.Value==LP and Model:FindFirstChild'Seat'then 
+            return Model
+        end;
+    end;
+    return false
+end;
+            
+
 function Ancestor:ModeratePlayer(Option)
     if Option~='Kick'then
 		return SendUserNotice:Fire'The Requested Action Is Not Currently Supported';
@@ -3758,7 +3768,7 @@ function Ancestor:AutobuyItems()
             ItemToBuy=Store:FindFirstChild(tstring(AutobuySelectedItem));
         end;
         if i==1 then Ancestor:Teleport(cframe.new(ItemToBuy.PrimaryPart.CFrame.p+vector3.new(5,0,5)));for i=1,2 do TestPing:InvokeServer();end;end;
-        repeat Stepped:wait()ClientRequestOwnership:FireServer(ItemToBuy)ClientIsDragging:FireServer(ItemToBuy)ItemToBuy:SetPrimaryPartCFrame(cframe.new(Counter.CFrame.p))until (Counter.CFrame.p-ItemToBuy.PrimaryPart.CFrame.p).Magnitude<8;
+        repeat Stepped:wait()ClientIsDragging:FireServer(ItemToBuy)ItemToBuy:SetPrimaryPartCFrame(cframe.new(Counter.CFrame.p))until (Counter.CFrame.p-ItemToBuy.PrimaryPart.CFrame.p).Magnitude<8;
         Connections[#Connections+1]={Name='AutobuyConnection',Function=wrkspc.PlayerModels.ChildAdded:Connect(function(Child)
             local Owner=Child:WaitForChild('Owner',5);
             if Owner.Value==LP then 
@@ -3889,184 +3899,85 @@ end,GUISettings.WaterFloat,true,'Toggles Whether Or Not You Float While In Water
 
 local OtherPlayerTab=AncestorUI:CreateTab(8769279408,'Troll Options');
 local OtherPlayerSection=OtherPlayerTab:CreateSection()
-local ModeratePlayer=OtherPlayerSection:
-CreateSubSection('Troll Options');
+local ModeratePlayer=OtherPlayerSection:CreateSubSection('Troll Options');
 
 ModeratePlayer:CreateDropDown(function(Option)
     Ancestor.ModerationAction=Option;
- end,{'Kick','Kill','Hard Kill','Bring','Fling'},'Kick');
+ end,{'Kill','Bring'},'Kill');
 
  ModeratePlayer:CreateDropDown(function(Player)
    Ancestor.PlayerToModerate=Players[tstring(Player)]
 end,{},false,true);
-ModeratePlayer:CreateToggle('Dupe Axe',false,
-function(state)Ancestor
-DupeAxeBeforeModerationAction=state;end,false,true,
-'Duplicates Your Inventory Before Performing Action.');
-ModeratePlayer:CreateButton('Perform Action',
-function()Ancestor:ModeratePlayer(Ancestor.
-ModerationAction);end,true,true,'Performs The Selected 
-Action Against The Selected Player.');
-local ServerOptions=OtherPlayerSection:
-CreateSubSection('Server Options');
-ServerOptions:CreateToggle('Alert Server Killer(Toxic)',
-false,function(state)GUISettings.AlertShutdown=state;
-end,GUISettings.AlertShutdown,true,'Alerts Every Player 
-In The Server That You\'re Going To Kill It.');
-ServerOptions:CreateButton('Kill Server',function()if 
-AncestorUI:CreateOption()then if GUISettings.
-AlertShutdown then SayMessageRequest:
-FireServer('NUKING SERVER IN 3 ','All')for i=2,1,-1 do 
-task.wait(1)SayMessageRequest:FireServer(tstring(i),
-'All');end;SayMessageRequest:FireServer('NICE 
-KNOWING YOU BOZOS!!!!','All')end;Ancestor:
-ClaimAllFreePlots(true)else SendUserNotice:Fire'Kill 
-Server Aborted'end;end,true,true,'This Will Literally Kill 
-The Server. No Joke.');
-local PlotTab=AncestorUI:CreateTab(8772257496,'Plot 
-Options');
+ModeratePlayer:CreateButton('Perform Action',function()Ancestor:ModeratePlayer(Ancestor.ModerationAction);end,true,true,'Performs The Selected Action Against The Selected Player.');
+local ServerOptions=OtherPlayerSection:CreateSubSection('Server Options');
+ServerOptions:CreateToggle('Alert Server Killer(Toxic)',false,function(state)GUISettings.AlertShutdown=state;end,GUISettings.AlertShutdown,true,'Alerts Every Player In The Server That You\'re Going To Kill It.');
+ServerOptions:CreateButton('Kill Server',function()if AncestorUI:CreateOption()then if GUISettings.AlertShutdown then SayMessageRequest:FireServer('NUKING SERVER IN 3 ','All')for i=2,1,-1 do task.wait(1)SayMessageRequest:FireServer(tstring(i),'All');end;SayMessageRequest:FireServer('NICE KNOWING YOU BOZOS!!!!','All')end;Ancestor:ClaimAllFreePlots(true)else SendUserNotice:Fire'Kill Server Aborted'end;end,true,true,'This Will Literally Kill The Server. No Joke.');
+local PlotTab=AncestorUI:CreateTab(8772257496,'Plot Options');
 local PlotSection=PlotTab:CreateSection()
-local LoadSection=PlotSection:CreateSubSection('Load 
-Options');
+local LoadSection=PlotSection:CreateSubSection('Load Options');
 local Load;
-Load=LoadSection:CreateSlider('Slot To Load',
-function(slot)if SlotNames.Slot1~='Slot 1'then Load:
-UpdateHeader('Slot Name: '..SlotNames['Slot'..slot])end;
-GUISettings.SelectedPlot=slot;end,1,6,1,false,nil,
-(SlotNames.Slot1~='Slot 1'));
+Load=LoadSection:CreateSlider('Slot To Load',function(slot)if SlotNames.Slot1~='Slot 1'then Load:UpdateHeader('Slot Name: '..SlotNames['Slot'..slot])end;GUISettings.SelectedPlot=slot;end,1,6,1,false,nil,(SlotNames.Slot1~='Slot 1'));
 if SlotNames.Slot1~='Slot 1'then 
     Load:UpdateHeader('Slot Name: '..SlotNames.Slot1);
 end;
-LoadSection:CreateButton('Load Selected Slot',
-function()Ancestor:LoadSlot(GUISettings.SelectedPlot);
-end,true,true,'Loads The Selected Slot.');
-LoadSection:CreateButton('Unload Selected Slot',
-function()Request_Save:InvokeServer(Ancestor:
-GetLoadedSlot())Ancestor:CanClientLoad();Ancestor:
-FastDeload()Request_Load:
-InvokeServer(-1,LP)Ancestor:Set(-1);end,true,true,
-'Unloads The Current Slot.');
-LoadSection:CreateButton('Delete Selected Slot',
-function()if AncestorUI:CreateOption()then Ancestor:
-DeleteSlot(GUISettings.SelectedPlot)else 
-SendUserNotice:Fire'Delete Slot Aborted'end;end,true,
-true,'Deletes The Selected Slot.');
-LoadSection:CreateButton('Save Selected Slot',
-function()Ancestor:SaveSlot();end,true,true,'Saves The 
-Current Loaded Slot.');
-local PlotInfoSection=PlotSection:
-CreateSubSection('Plot Information');
+LoadSection:CreateButton('Load Selected Slot',function()Ancestor:LoadSlot(GUISettings.SelectedPlot);end,true,true,'Loads The Selected Slot.');
+LoadSection:CreateButton('Unload Selected Slot',function()Request_Save:InvokeServer(Ancestor:GetLoadedSlot())Ancestor:CanClientLoad();Ancestor:FastDeload()Request_Load:InvokeServer(-1,LP)Ancestor:Set(-1);end,true,true,'Unloads The Current Slot.');
+LoadSection:CreateButton('Delete Selected Slot',function()if AncestorUI:CreateOption()then Ancestor:DeleteSlot(GUISettings.SelectedPlot)else SendUserNotice:Fire'Delete Slot Aborted'end;end,true,true,'Deletes The Selected Slot.');
+LoadSection:CreateButton('Save Selected Slot',function()Ancestor:SaveSlot();end,true,true,'Saves The Current Loaded Slot.');
+local PlotInfoSection=PlotSection:CreateSubSection('Plot Information');
 local SlotName,Slot1,Slot2,Slot3,Slot4,Slot5,Slot6;
 
 PlotInfoSection:CreateDropDown(function(Player)
     if not Players:FindFirstChild(Player)then 
         return Ancestor:Notify('Error','Player Not Found!');
     end;
-    SlotName:UpdateText('Loading Info for '..
-tstring(Player)..'...')
+    SlotName:UpdateText('Loading Info for '..tstring(Player)..'...')
     C_R(C_C(function()
         local Data=Ancestor:GetPlayersSlotInfo(Player)
-        SlotName:UpdateText('Showing Info for '..
-tstring(Player));
-        Slot1:UpdateText('Slot 1 Datasize: '..
-tstring(Data[1]~=nil and Data[1] or '0'));
-        Slot2:UpdateText('Slot 2 Datasize: '..
-tstring(Data[2]~=nil and Data[2] or '0'));
-        Slot3:UpdateText('Slot 3 Datasize: '..
-tstring(Data[3]~=nil and Data[3] or '0'));
-        Slot4:UpdateText('Slot 4 Datasize: '..
-tstring(Data[4]~=nil and Data[4] or '0'));
-        Slot5:UpdateText('Slot 5 Datasize: '..
-tstring(Data[5]~=nil and Data[5] or '0'));
-        Slot6:UpdateText('Slot 6 Datasize: '..
-tstring(Data[6]~=nil and Data[6] or '0'));
+        SlotName:UpdateText('Showing Info for '..tstring(Player));
+        Slot1:UpdateText('Slot 1 Datasize: '..tstring(Data[1]~=nil and Data[1] or '0'));
+        Slot2:UpdateText('Slot 2 Datasize: '..tstring(Data[2]~=nil and Data[2] or '0'));
+        Slot3:UpdateText('Slot 3 Datasize: '..tstring(Data[3]~=nil and Data[3] or '0'));
+        Slot4:UpdateText('Slot 4 Datasize: '..tstring(Data[4]~=nil and Data[4] or '0'));
+        Slot5:UpdateText('Slot 5 Datasize: '..tstring(Data[5]~=nil and Data[5] or '0'));
+        Slot6:UpdateText('Slot 6 Datasize: '..tstring(Data[6]~=nil and Data[6] or '0'));
     end));
 end,{},false,true);
 C_R(C_C(function()
-    SlotName=PlotInfoSection:CreateTitle('Showing Info 
-for '..tstring(LP))
+    SlotName=PlotInfoSection:CreateTitle('Showing Info for '..tstring(LP))
     local Data=Ancestor:GetPlayersSlotInfo(LP)
-    Slot1=PlotInfoSection:CreateLabel('Slot 1 Datasize: '..
-tstring(Data[1]~=nil and Data[1] or '0'));
-    Slot2=PlotInfoSection:CreateLabel('Slot 2 Datasize: '..
-tstring(Data[2]~=nil and Data[2] or '0'));
-    Slot3=PlotInfoSection:CreateLabel('Slot 3 Datasize: '..
-tstring(Data[3]~=nil and Data[3] or '0'));
-    Slot4=PlotInfoSection:CreateLabel('Slot 4 Datasize: '..
-tstring(Data[4]~=nil and Data[4] or '0'));
-    Slot5=PlotInfoSection:CreateLabel('Slot 5 Datasize: '..
-tstring(Data[5]~=nil and Data[5] or '0'));
-    Slot6=PlotInfoSection:CreateLabel('Slot 6 Datasize: '..
-tstring(Data[6]~=nil and Data[6] or '0'));
+    Slot1=PlotInfoSection:CreateLabel('Slot 1 Datasize: '..tstring(Data[1]~=nil and Data[1] or '0'));
+    Slot2=PlotInfoSection:CreateLabel('Slot 2 Datasize: '..tstring(Data[2]~=nil and Data[2] or '0'));
+    Slot3=PlotInfoSection:CreateLabel('Slot 3 Datasize: '..tstring(Data[3]~=nil and Data[3] or '0'));
+    Slot4=PlotInfoSection:CreateLabel('Slot 4 Datasize: '..tstring(Data[4]~=nil and Data[4] or '0'));
+    Slot5=PlotInfoSection:CreateLabel('Slot 5 Datasize: '..tstring(Data[5]~=nil and Data[5] or '0'));
+    Slot6=PlotInfoSection:CreateLabel('Slot 6 Datasize: '..tstring(Data[6]~=nil and Data[6] or '0'));
 end))
 
-local MiscPlotSection=PlotSection:
-CreateSubSection('Misc Plot Options');
-MiscPlotSection:CreateToggle('Slot Saving',false,
-function(state)GUISettings.DisableSaving=state;end,
-GUISettings.DisableSaving,true,'Toggles Slot Saving.');
-MiscPlotSection:CreateToggle('Fast Deload',false,
-function(state)GUISettings.FastDeloader=state;end,
-GUISettings.FastDeloader,true,'Toggles Fast Deloading 
-When Loading.');
-local SlotSection=PlotSection:
-CreateSubSection('Physical Plot Options');
-SlotSection:CreateButton('Free Land',function()Ancestor:
-FreeLand();end,true,true,'Gives You Land For Free.');
-SlotSection:CreateButton('Max Land',function()Ancestor:
-MaxLand();end,true,true,'Max-Lands Your Plot For Free.');
-SlotSection:CreateButton('Sell Land Sign',
-function()Ancestor:SellSign();end,true,true,'Sells Your 
-Plot Sign If You Have One.');
-SlotSection:CreateButton('Expand Land',
-function()PropertyPurchasingClient.
-setPlatformControls=function()end;
-PropertyPurchasingClient.enterPurchaseMode(0,true);
-end,true,true,'Allows You To Expand Your Land To Your 
-Liking.');
-local DupeSection=PlotSection:CreateSubSection('Plot 
-Donation Options');
-DupeSection:CreateSlider('Plot To Donate',
-function(slot)Ancestor.BaseToDonate=slot;end,1,6);
-DupeSection:CreateToggle('New Method',false,
-function(state)GUISettings.NewDonateBase=state;end,
-GUISettings.NewDonateBase,true,'Toggles The New 
-Donate Base Method.');
-DupeSection:CreateButton('Donate Plot',function()if 
-GUISettings.NewDonateBase then Ancestor:
-DonateBase(true)return end;Ancestor:DonateBase();end,
-true,true,'Donates Your Plot To The Server. Make Sure 
-To Whitelist Them.');
--- local DupeSection=PlotSection:
-CreateSubSection('Plot Self Duplication Options');
--- DupeSection:CreateSlider('Plot To Donate',
-function(slot)Ancestor.BaseToDupe=slot;end,1,6);
--- DupeSection:CreateButton('Self Dupe',function()if not 
-Ancestor:GetPlayersBase()then Ancestor:
-LoadSlot(Ancestor.BaseToDupe);end;Ancestor:
-SelfDupe()end,true,true,'Donates Your Plot To The Server.
-Make Sure To Whitelist Them.');
+local MiscPlotSection=PlotSection:CreateSubSection('Misc Plot Options');
+MiscPlotSection:CreateToggle('Slot Saving',false,function(state)GUISettings.DisableSaving=state;end,GUISettings.DisableSaving,true,'Toggles Slot Saving.');
+MiscPlotSection:CreateToggle('Fast Deload',false,function(state)GUISettings.FastDeloader=state;end,GUISettings.FastDeloader,true,'Toggles Fast Deloading When Loading.');
+local SlotSection=PlotSection:CreateSubSection('Physical Plot Options');
+SlotSection:CreateButton('Free Land',function()Ancestor:FreeLand();end,true,true,'Gives You Land For Free.');
+SlotSection:CreateButton('Max Land',function()Ancestor:MaxLand();end,true,true,'Max-Lands Your Plot For Free.');
+SlotSection:CreateButton('Sell Land Sign',function()Ancestor:SellSign();end,true,true,'Sells Your Plot Sign If You Have One.');
+SlotSection:CreateButton('Expand Land',function()PropertyPurchasingClient.setPlatformControls=function()end;PropertyPurchasingClient.enterPurchaseMode(0,true);end,true,true,'Allows You To Expand Your Land To Your Liking.');
+local DupeSection=PlotSection:CreateSubSection('Plot Donation Options');
+DupeSection:CreateSlider('Plot To Donate',function(slot)Ancestor.BaseToDonate=slot;end,1,6);
+DupeSection:CreateToggle('New Method',false,function(state)GUISettings.NewDonateBase=state;end,GUISettings.NewDonateBase,true,'Toggles The New Donate Base Method.');
+DupeSection:CreateButton('Donate Plot',function()if GUISettings.NewDonateBase then Ancestor:DonateBase(true)return end;Ancestor:DonateBase();end,true,true,'Donates Your Plot To The Server. Make Sure To Whitelist Them.');
+-- local DupeSection=PlotSection:CreateSubSection('Plot Self Duplication Options');
+-- DupeSection:CreateSlider('Plot To Dupe',function(slot)Ancestor.BaseToDupe=slot;end,1,6);
+-- DupeSection:CreateButton('Self Dupe',function()if not Ancestor:GetPlayersBase()then Ancestor:LoadSlot(Ancestor.BaseToDupe);end;Ancestor:SelfDupe()end,true,true,'Donates Your Plot To The Server. Make Sure To Whitelist Them.');
 
--- local BuildSection=PlotSection:
-CreateSubSection('Save/Build Options');
--- BuildSection:CreateTextbox('Save Base To File',
-function(Name)if not Ancestor:GetPlayersBase()then 
-return SendUserNotice:Fire'Player has no plot 
-Loaded'end; if Name==''then SendUserNotice:Fire'Invalid 
-File Name!'return;end; Ancestor:SaveBaseToFile(nil,
-Name);SendUserNotice:Fire('Saved '..tstring(Name)..'!');
-end,'Enter FileName Here',false,true,'Saves The Player\'s 
-Base To A File.');
--- BuildSection:CreateTextbox('Load Base from File',
-function(Name)Ancestor:LoadBaseFromFile(Name)end,
-'Enter FileName Here',false,true,'Build The Bases From A 
-File.');
+-- local BuildSection=PlotSection:CreateSubSection('Save/Build Options');
+-- BuildSection:CreateTextbox('Save Base To File',function(Name)if not Ancestor:GetPlayersBase()then return SendUserNotice:Fire'Player has no plot Loaded'end; if Name==''then SendUserNotice:Fire'Invalid File Name!'return;end; Ancestor:SaveBaseToFile(nil,Name);SendUserNotice:Fire('Saved '..tstring(Name)..'!');end,'Enter FileName Here',false,true,'Saves The Player\'s Base To A File.');
+-- BuildSection:CreateTextbox('Load Base from File',function(Name)Ancestor:LoadBaseFromFile(Name)end,'Enter FileName Here',false,true,'Build The Bases From A File.');
 
-local TreeTab=AncestorUI:CreateTab(8772271242,'Tree 
-Options');
+
+local TreeTab=AncestorUI:CreateTab(8772271242,'Tree Options');
 local TreeSection=TreeTab:CreateSection()
-local BringTreeSection=TreeSection:
-CreateSubSection('Bring Tree');
+local BringTreeSection=TreeSection:CreateSubSection('Bring Tree');
 local BringTreeButton;
 BringTreeSection:CreateDropDown(function(Option)
     Ancestor.SelectedTreeType=Option;
@@ -4075,265 +3986,109 @@ BringTreeSection:CreateDropDown(function(Option)
     else
         Title='Trees';
     end;
-    BringTreeButton:UpdateHeader('Bring '..Ancestor.
-BringTreeAmount..' '..Ancestor.SelectedTreeType..' '..
-Title)
-end,{'Generic','GoldSwampy','CaveCrawler','Cherry','Frost',
-'Volcano','Oak','Walnut','Birch','SnowGlow','Pine',
-'GreenSwampy','Koa','Palm','Spooky','SpookyNeon',--
-[['LoneCave']]},'Generic',false);
-BringTreeSection:CreateSlider('Quantity',
-function(Quantity)Ancestor.BringTreeAmount=Quantity;
-if Quantity<=1 then Title='Tree';else Title='Trees';end;
-BringTreeButton:UpdateHeader('Bring '..Ancestor.
-BringTreeAmount..' '..Ancestor.SelectedTreeType..' '..
-Title);end,1,10,1,false,nil);
-BringTreeButton=BringTreeSection:CreateButton('Bring 
-1 Generic Tree',function()Ancestor:BringTree();end,true,
-true,'Brings The Selected Amount Of The Selected Tree 
-To You.');
--- local BuildSection=PlotSection:
-CreateSubSection('Save/Build Options');
+    BringTreeButton:UpdateHeader('Bring '..Ancestor.BringTreeAmount..' '..Ancestor.SelectedTreeType..' '..Title)
+end,{'Generic','GoldSwampy','CaveCrawler','Cherry','Frost','Volcano','Oak','Walnut','Birch','SnowGlow','Pine','GreenSwampy','Koa','Palm','Spooky','SpookyNeon',--[['LoneCave']]},'Generic',false);
+BringTreeSection:CreateSlider('Quantity',function(Quantity)Ancestor.BringTreeAmount=Quantity;if Quantity<=1 then Title='Tree';else Title='Trees';end;BringTreeButton:UpdateHeader('Bring '..Ancestor.BringTreeAmount..' '..Ancestor.SelectedTreeType..' '..Title);end,1,10,1,false,nil);
+BringTreeButton=BringTreeSection:CreateButton('Bring 1 Generic Tree',function()Ancestor:BringTree();end,true,true,'Brings The Selected Amount Of The Selected Tree To You.');
+-- local BuildSection=PlotSection:CreateSubSection('Save/Build Options');
 
-BringTreeButton:UpdateHeader('Bring '..Ancestor.
-BringTreeAmount..' '..Ancestor.SelectedTreeType..' Tree')
 
-local DraggingOptions=TreeSection:
-CreateSubSection('Dragging Options');
-DraggingOptions:CreateToggle('Hard Dragger',false,
-function(state)GUISettings.HardDragger=state;Ancestor:
-HardDragger(state)end,GUISettings.HardDragger,true,
-'Makes Picking Up Heavy Trees/Items Much Easier.');
+BringTreeButton:UpdateHeader('Bring '..Ancestor.BringTreeAmount..' '..Ancestor.SelectedTreeType..' Tree')
 
-local MoneyTab=AncestorUI:
-CreateTab(5182389716,'Money Options');
+
+local DraggingOptions=TreeSection:CreateSubSection('Dragging Options');
+DraggingOptions:CreateToggle('Hard Dragger',false,function(state)GUISettings.HardDragger=state;Ancestor:HardDragger(state)end,GUISettings.HardDragger,true,'Makes Picking Up Heavy Trees/Items Much Easier.');
+
+local MoneyTab=AncestorUI:CreateTab(5182389716,'Money Options');
 local MoneySection=MoneyTab:CreateSection()
-local Autobuy=MoneySection:
-CreateSubSection('Autobuy');
-Autobuy:CreateDropDown(function(item)Ancestor:
-GetItemInfo(item,'Name')end,{unpack(Ancestor:
-GetStoreItems())},'Basic Hatchet - $12',false);
-Autobuy:CreateSlider('Amount',
-function(Quantity)AutobuyAmount=Quantity;end,1,100);
-Autobuy:CreateButton('Purchase Item/s',
-function()Ancestor:AutobuyItems();end,true,true,'Auto-
-Buys The Selected Items.');
-local DupeMoney=MoneySection:
-CreateSubSection('Money Duplication');
-game:GetService("CoreGui").Ancestor.MainFrame.
-Sections["Money Options"].Sections.Frame.
-ScrollingFrame.Frame.Position=UDim2.new(0.5,0,.49,0)
-DupeMoney:CreateSlider('Amount',
-function(Quantity)DupeMoneyQuantity=Quantity;
-end,1,10);
-DupeMoney:CreateButton('Dupe Money On Selected 
-Slot',function()Ancestor:DupeMoney();end,true,true,
-'Duplicates Your Current Money Amount.');
-DupeMoney:CreateButton('Abort Dupe Money',
-function()if Ancestor.MoneyDuping then Ancestor.
-MoneyDuping=false;SendUserNotice:Fire'Attempting To 
-Abort Money Dupe!';else SendUserNotice:Fire'Money 
-Dupe Is Not Active!';end;end,true,true,'Terminates Money 
-Duplication. May Take A While.');
-local AxeTab=AncestorUI:CreateTab(8772286873,'Axe 
-Options');
+local Autobuy=MoneySection:CreateSubSection('Autobuy');
+Autobuy:CreateDropDown(function(item)Ancestor:GetItemInfo(item,'Name')end,{unpack(Ancestor:GetStoreItems())},'Basic Hatchet - $12',false);
+Autobuy:CreateSlider('Amount',function(Quantity)AutobuyAmount=Quantity;end,1,100);
+Autobuy:CreateButton('Purchase Item/s',function()Ancestor:AutobuyItems();end,true,true,'Auto-Buys The Selected Items.');
+local DupeMoney=MoneySection:CreateSubSection('Money Duplication');
+game:GetService("CoreGui").Ancestor.MainFrame.Sections["Money Options"].Sections.Frame.ScrollingFrame.Frame.Position=UDim2.new(0.5,0,.49,0)
+DupeMoney:CreateSlider('Amount',function(Quantity)DupeMoneyQuantity=Quantity;end,1,10);
+DupeMoney:CreateButton('Dupe Money On Selected Slot',function()Ancestor:DupeMoney();end,true,true,'Duplicates Your Current Money Amount.');
+DupeMoney:CreateButton('Abort Dupe Money',function()if Ancestor.MoneyDuping then Ancestor.MoneyDuping=false;SendUserNotice:Fire'Attempting To Abort Money Dupe!';else SendUserNotice:Fire'Money Dupe Is Not Active!';end;end,true,true,'Terminates Money Duplication. May Take A While.');
+local AxeTab=AncestorUI:CreateTab(8772286873,'Axe Options');
 local AxeSection=AxeTab:CreateSection()
-local AxeModifications=AxeSection:
-CreateSubSection('Axe Stats');
+local AxeModifications=AxeSection:CreateSubSection('Axe Stats');
 
-AxeModifications:CreateSlider('Axe Range',
-function(Quantity)GUISettings.AxeRange=Quantity;if 
-GUISettings.AxeRangeActive then Ancestor:
-SetAxeRange(true,Quantity)end;end,0,120,GUISettings.
-AxeRange,true,'Modifies Your Axe Range So You Can 
-Cut Trees From A Longer Distance.');
-AxeModifications:CreateToggle('Activate Axe Range',
-false,function(toggle)GUISettings.
-AxeRangeActive=toggle;Ancestor:SetAxeRange(true,
-GUISettings.AxeRange)if not toggle then Ancestor:
-SetAxeRange(false)end;end,GUISettings.
-AxeRangeActive,true,'Activates Axe Range Modifications.
-');
-AxeModifications:CreateToggle(' No Axe Cooldown',
-false,function(toggle)GUISettings.
-AxeSwingActive=toggle;Ancestor:
-SetSwingCooldown(true)if not toggle then Ancestor:
-SetSwingCooldown(false)end;end,GUISettings.
-AxeSwingActive,true,'Removes The ClientSided 
-Cooldown For Swinging Axes.');
+AxeModifications:CreateSlider('Axe Range',function(Quantity)GUISettings.AxeRange=Quantity;if GUISettings.AxeRangeActive then Ancestor:SetAxeRange(true,Quantity)end;end,0,120,GUISettings.AxeRange,true,'Modifies Your Axe Range So You Can Cut Trees From A Longer Distance.');
+AxeModifications:CreateToggle('Activate Axe Range',false,function(toggle)GUISettings.AxeRangeActive=toggle;Ancestor:SetAxeRange(true,GUISettings.AxeRange)if not toggle then Ancestor:SetAxeRange(false)end;end,GUISettings.AxeRangeActive,true,'Activates Axe Range Modifications.');
+AxeModifications:CreateToggle(' No Axe Cooldown',false,function(toggle)GUISettings.AxeSwingActive=toggle;Ancestor:SetSwingCooldown(true)if not toggle then Ancestor:SetSwingCooldown(false)end;end,GUISettings.AxeSwingActive,true,'Removes The ClientSided Cooldown For Swinging Axes.');
 
-local AxeInformation=AxeSection:
-CreateSubSection('Current Axe Information');
-AxeNameLabel=AxeInformation:CreateLabel('Current 
-Axe Not Found');
-AxeRangeLabel=AxeInformation:CreateLabel('Range: 
-NULL')
-AxeCooldownLabel=AxeInformation:
-CreateLabel('Cooldown: NULL')
+local AxeInformation=AxeSection:CreateSubSection('Current Axe Information');
+AxeNameLabel=AxeInformation:CreateLabel('Current Axe Not Found');
+AxeRangeLabel=AxeInformation:CreateLabel('Range: NULL')
+AxeCooldownLabel=AxeInformation:CreateLabel('Cooldown: NULL')
 -- AxeInformation:CreateLabel('Name: BasicHatchet')
-local AxeModifications=AxeSection
-CreateSubSection('Duplication Options');
+local AxeModifications=AxeSection:CreateSubSection('Duplication Options');
 local DupeInventory;
-DupeInventory=AxeModifications:CreateToggle('Dupe I
-Inventory',false,function(toggle)GUISettings.
-DupeInventory=toggle;if toggle then if not Ancestor:
-DupeInventory()then  task.wait(.3)DupeInventory:
-Toggle()end;end;end,false,true,'Duplicates Your 
-Inventory');
+DupeInventory=AxeModifications:CreateToggle('Dupe Inventory',false,function(toggle)GUISettings.DupeInventory=toggle;if toggle then if not Ancestor:DupeInventory()then  task.wait(.3)DupeInventory:Toggle()end;end;end,false,true,'Duplicates Your Inventory.');
 
-local AxeOptions=AxeSection:CreateSubSection('Axe 
-Options');
-AxeOptions:CreateButton('Drop All Tools',
-function()Ancestor:DropTools();end,true,true,'Drops All 
-Your Tools.');
+local AxeOptions=AxeSection:CreateSubSection('Axe Options');
+AxeOptions:CreateButton('Drop All Tools',function()Ancestor:DropTools();end,true,true,'Drops All Your Tools.');
 
-local BuildTab=AncestorUI:
-CreateTab(8772073607,'Build Options');
+local BuildTab=AncestorUI:CreateTab(8772073607,'Build Options');
 local BuildSection=BuildTab:CreateSection()
-local BuildMode=BuildSection:CreateSubSection('Build 
-Mode - Currently Under Development');
+local BuildMode=BuildSection:CreateSubSection('Build Mode - Currently Under Development');
 
-local CarTab=AncestorUI:CreateTab(8821528672,'Car 
-Options');
+local CarTab=AncestorUI:CreateTab(8821528672,'Car Options');
 local CarSection=CarTab:CreateSection()
-local CarMods=CarSection:CreateSubSection('Vehicle 
-Options');
-CarMods:CreateSlider('Car Speed',
-function(Speed)GUISettings.CarSpeed=Speed;
-end,1,4,GUISettings.CarSpeed,true,'Modifies Your Car 
-Speed So You Can Drive Faster.');
-CarMods:CreateSlider('Car Pitch',
-function(Speed)GUISettings.CarPitch=Speed;
-end,1,20,GUISettings.CarPitch,true,'Modifies Your Car 
-Pitch So You Can Annoy Other Players.');
-CarMods:CreateToggle('Activate Car Modifications',
-false,function(toggle)GUISettings.
-ActivateCarModifications=toggle;if not toggle then 
-Ancestor:ResetCarSpeed()end;end,GUISettings.
-ActivateCarModifications,true,'Activates Car 
-Modifications.');
--- local BaseDropTab=AncestorUI:
-CreateTab(8785403056,'Theme Options');
+local CarMods=CarSection:CreateSubSection('Vehicle Options');
+CarMods:CreateSlider('Car Speed',function(Speed)GUISettings.CarSpeed=Speed;end,1,4,GUISettings.CarSpeed,true,'Modifies Your Car Speed So You Can Drive Faster.');
+CarMods:CreateSlider('Car Pitch',function(Speed)GUISettings.CarPitch=Speed;end,1,20,GUISettings.CarPitch,true,'Modifies Your Car Pitch So You Can Annoy Other Players.');
+CarMods:CreateToggle('Activate Car Modifications',false,function(toggle)GUISettings.ActivateCarModifications=toggle;if not toggle then Ancestor:ResetCarSpeed()end;end,GUISettings.ActivateCarModifications,true,'Activates Car Modifications.');
+-- local BaseDropTab=AncestorUI:CreateTab(8785403056,'Theme Options');
 -- local BaseDropSection=BaseDropTab:CreateSection()
--- local BaseDrop=BaseDropSection:
-CreateSubSection('Theme Options - 
-Currently Under Development');
+-- local BaseDrop=BaseDropSection:CreateSubSection('Theme Options - Currently Under Development');
 
-local SettingsMain=AncestorUI:
-CreateTab(5182003557,'Settings');
+local SettingsMain=AncestorUI:CreateTab(5182003557,'Settings');
 local SettingsSection=SettingsMain:CreateSection();
-local Credits=SettingsSection:
-CreateSubSection('Credits');
+local Credits=SettingsSection:CreateSubSection('Credits');
 Credits:CreateLabel'Made By Ancestor';
-local GUIInfo=SettingsSection:CreateSubSection('GUI 
-Information');
+local GUIInfo=SettingsSection:CreateSubSection('GUI Information');
 GUIInfo:CreateLabel('Version: '..tstring(CurrentVersion));
 GUIInfo:CreateLabel('Executor: '..tstring(Executor));
 local Ping,CPU,CurrentSlot;
-Ping=GUIInfo:CreateLabel('Ping: '..math.floor(game:
-GetService("Stats").PerformanceStats.Ping:GetValue())..
-'ms');
-CPU=GUIInfo:CreateLabel('CPU: '..math.floor(game:
-GetService("Stats").
-PerformanceStats.CPU:GetValue())..'ms');
+Ping=GUIInfo:CreateLabel('Ping: '..math.floor(game:GetService("Stats").PerformanceStats.Ping:GetValue())..'ms');
+CPU=GUIInfo:CreateLabel('CPU: '..math.floor(game:GetService("Stats").PerformanceStats.CPU:GetValue())..'ms');
 CurrentSlot=GUIInfo:CreateLabel('');
-Connections[#Connections+1]={Name='Ping',
-Function=Stepped:
-Connect(function()
-    Ping:UpdateText('Ping: '..math.floor(game:
-GetService("Stats").
-PerformanceStats.Ping:GetValue())..'ms');
-    CPU:UpdateText('CPU: '..math.floor(game:
-GetService("Stats").
-PerformanceStats.CPU:GetValue())..'ms');
-    CurrentSlot:UpdateText('Current Loaded Slot: '..
-(Ancestor:GetLoadedSlot()>0 
-and Ancestor:GetLoadedSlot()or 'None'));
+Connections[#Connections+1]={Name='Ping',Function=Stepped:Connect(function()
+    Ping:UpdateText('Ping: '..math.floor(game:GetService("Stats").PerformanceStats.Ping:GetValue())..'ms');
+    CPU:UpdateText('CPU: '..math.floor(game:GetService("Stats").PerformanceStats.CPU:GetValue())..'ms');
+    CurrentSlot:UpdateText('Current Loaded Slot: '..(Ancestor:GetLoadedSlot()>0 and Ancestor:GetLoadedSlot()or 'None'));
 end)}
 
-local ConfigurationSettings=SettingsSection:
-CreateSubSection('Configuration 
-Settings');
-ConfigurationSettings:CreateButton('Save Configuration',
-function()Ancestor:
-SaveConfigurationFile()end,true,true,'Saves Your 
-Confiuration File');
-ConfigurationSettings:CreateButton('Delete 
-Configuration',function()Ancestor:
-DeleteConfigurationFile()end,true,true,'Deletes Your 
-Confiuration File');
-local PlotNameSettings=SettingsSection:
-CreateSubSection('Plot Name 
-Settings');
-PlotNameSettings:CreateTextbox('Slot 1 Name',
-function(Name)SlotNames.
-Slot1=Name;Ancestor:GetPlotButtonByID(1).
-Text=Name;end,SlotNames.
-Slot1,false,true,'Renames Slot 1 To Your Preferred Name.
-',true);
-PlotNameSettings:CreateTextbox('Slot 2 Name',
-function(Name)SlotNames.
-Slot2=Name;Ancestor:GetPlotButtonByID(2).
-Text=Name;end,SlotNames.
-Slot2,false,true,'Renames Slot 2 To Your Preferred Name.
-',true);
-PlotNameSettings:CreateTextbox('Slot 3 Name',
-function(Name)SlotNames.
-Slot3=Name;Ancestor:GetPlotButtonByID(3).
-Text=Name;end,SlotNames.
-Slot3,false,true,'Renames Slot 3 To Your Preferred Name.
-',true);
-PlotNameSettings:CreateTextbox('Slot 4 Name',
-function(Name)SlotNames.
-Slot4=Name;Ancestor:GetPlotButtonByID(4).
-Text=Name;end,SlotNames.
-Slot4,false,true,'Renames Slot 4 To Your Preferred Name.
-',true);
-PlotNameSettings:CreateTextbox('Slot 5 Name',
-function(Name)SlotNames.
-Slot5=Name;Ancestor:GetPlotButtonByID(5).
-Text=Name;end,SlotNames.
-Slot5,false,true,'Renames Slot 5 To Your Preferred Name.
-',true);
-PlotNameSettings:CreateTextbox('Slot 6 Name',
-function(Name)SlotNames.
-Slot6=Name;Ancestor:GetPlotButtonByID(6).
-Text=Name;end,SlotNames.
-Slot6,false,true,'Renames Slot 6 To Your Preferred Name.
-',true);
-PlotNameSettings:CreateButton('Save Slot Names',
-function()Ancestor:
-SaveSlotNames();end,true,true,'Saves Your Slot Names 
-ONLY For The Current 
-ROBLOX Account.');
-local Settings=SettingsSection:CreateSubSection('GUI 
-Settings');
+local ConfigurationSettings=SettingsSection:CreateSubSection('Configuration Settings');
+ConfigurationSettings:CreateButton('Save Configuration',function()Ancestor:SaveConfigurationFile()end,true,true,'Saves Your Confiuration File');
+ConfigurationSettings:CreateButton('Delete Configuration',function()Ancestor:DeleteConfigurationFile()end,true,true,'Deletes Your Confiuration File');
+local PlotNameSettings=SettingsSection:CreateSubSection('Plot Name Settings');
+PlotNameSettings:CreateTextbox('Slot 1 Name',function(Name)SlotNames.Slot1=Name;Ancestor:GetPlotButtonByID(1).Text=Name;end,SlotNames.Slot1,false,true,'Renames Slot 1 To Your Preferred Name.',true);
+PlotNameSettings:CreateTextbox('Slot 2 Name',function(Name)SlotNames.Slot2=Name;Ancestor:GetPlotButtonByID(2).Text=Name;end,SlotNames.Slot2,false,true,'Renames Slot 2 To Your Preferred Name.',true);
+PlotNameSettings:CreateTextbox('Slot 3 Name',function(Name)SlotNames.Slot3=Name;Ancestor:GetPlotButtonByID(3).Text=Name;end,SlotNames.Slot3,false,true,'Renames Slot 3 To Your Preferred Name.',true);
+PlotNameSettings:CreateTextbox('Slot 4 Name',function(Name)SlotNames.Slot4=Name;Ancestor:GetPlotButtonByID(4).Text=Name;end,SlotNames.Slot4,false,true,'Renames Slot 4 To Your Preferred Name.',true);
+PlotNameSettings:CreateTextbox('Slot 5 Name',function(Name)SlotNames.Slot5=Name;Ancestor:GetPlotButtonByID(5).Text=Name;end,SlotNames.Slot5,false,true,'Renames Slot 5 To Your Preferred Name.',true);
+PlotNameSettings:CreateTextbox('Slot 6 Name',function(Name)SlotNames.Slot6=Name;Ancestor:GetPlotButtonByID(6).Text=Name;end,SlotNames.Slot6,false,true,'Renames Slot 6 To Your Preferred Name.',true);
+PlotNameSettings:CreateButton('Save Slot Names',function()Ancestor:SaveSlotNames();end,true,true,'Saves Your Slot Names ONLY For The Current ROBLOX Account.');
+local Settings=SettingsSection:CreateSubSection('GUI Settings');
 Settings:CreateKeybind('Toggle UI',function(v)
-    game.CoreGui.Ancestor.Enabled=not game.CoreGui.
-Ancestor.Enabled;
-end,Enum.KeyCode.RightControl,true,'Toggles UI 
-Visibility.');
-Settings:CreateToggle('GUI Tips',false,
-function(toggle)for i,v in next,AncestorUI:
-GetHelpSections()do v.Visible=toggle;end;end,true,true,
-'Toggles GUI Tips');
+    game.CoreGui.Ancestor.Enabled=not game.CoreGui.Ancestor.Enabled;
+end,Enum.KeyCode.RightControl,true,'Toggles UI Visibility.');
+Settings:CreateToggle('GUI Tips',false,function(toggle)for i,v in next,AncestorUI:GetHelpSections()do v.Visible=toggle;end;end,true,true,'Toggles GUI Tips');
 Settings:CreateTitle('Dropdown Name Settings')
 Settings:CreateDropDown(function(Type)
    PlayerDropType=Type;
    GUISettings.SelectedDropType=Type;
    PlayerDropType=GUISettings.SelectedDropType
-end,{'Both','DisplayName','UserName'},GUISettings.
-SelectedDropType);
-Connections[#Connections+1]={Name='DestroyedGUI',
-Function=game.CoreGui.
-ChildRemoved:Connect(function(Child)
+end,{'Both','DisplayName','UserName'},GUISettings.SelectedDropType);
+Connections[#Connections+1]={Name='DestroyedGUI',Function=game.CoreGui.ChildRemoved:Connect(function(Child)
     if tstring(Child)=='Ancestor'then
         Ancestor_Loaded=false;
-        GUISettings.IsClientFlying=false;GUISettings.
-Fling=false;
+        GUISettings.IsClientFlying=false;GUISettings.Fling=false;
 		for i=1,#Connections do 
 			Connections[i].Function:Disconnect();
 		end;
     end;
-end)};warn('Loaded AncestorV2 In '..tstring(os.time()-
-Start)..' Second/s =^w^=');
+end)};warn('Loaded AncestorV2 In '..tstring(os.time()-Start)..' Second/s =^w^=');
